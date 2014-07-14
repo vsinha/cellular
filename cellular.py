@@ -6,14 +6,14 @@ import time
 
 _NUM_ITERS = 15
 
-COMPASS = [ [0,  -1],
-            [1,  -1],
-            [1,   0],
-            [1,   1],
-            [0,   1],
-            [-1,  1],
-            [-1,  0],
-            [-1, -1]]
+COMPASS = set([(0,  -1),
+              (1,  -1),
+              (1,   0),
+              (1,   1),
+              (0,   1),
+              (-1,  1),
+              (-1,  0),
+              (-1, -1)])
 
 class Cellular(object):
   def __init__(self):
@@ -75,8 +75,6 @@ class Cellular(object):
 
   def displayBoard(self):
     pprint.pprint(self.board)
-
-
 
 
 def main():
