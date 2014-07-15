@@ -1,15 +1,23 @@
-var width;
-var height;
 var canvas;
 var ctx;
+
+// Width & Height in pixels of the html canvas
+var width;
+var height;
+
 var gameBoard;
 var squareSize = 10;
+
+// Rows & cols in game board
 var rows;
 var cols;
 
+// For the timer
+var timer;
+var delay = 100;
+
 
 var COMPASS = [[0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
-
 var NUM_ITERS = 5;
 
 
@@ -116,15 +124,6 @@ function printBoard(board) {
   }
 }
 
-function sleep(milliseconds) {
-  var start = new Date().getTime();
-  for (var i = 0; i < 1e7; i++) {
-    if ((new Date().getTime() - start) > milliseconds){
-      break;
-    }
-  }
-}
-
 function toggleCellState(i, j) {
   if (gameBoard[i][j] == 0) {
     gameBoard[i][j] = 1;
@@ -133,6 +132,16 @@ function toggleCellState(i, j) {
   }
 
   displayBoard(gameBoard);
+}
+
+function setCellStateAtCoordinate(x, y, state) {
+  gameBoard[Math.floor(y / squareSize)][Math.floor(x / squareSize)] = state;
+  displayBoard(gameBoard);
+}
+
+function getCellStateAtCoordinate(x, y) {
+  var state = gameBoard[Math.floor(y / squareSize)][Math.floor(x / squareSize)];
+  return state;
 }
 
 function onCanvasClick(ev) {
@@ -146,9 +155,6 @@ function onCanvasClick(ev) {
     toggleCellState(Math.floor(i), Math.floor(j));
 }
 
-var timer;
-var delay = 100;
-
 function stopIterate() {
   clearInterval(timer);
 }
@@ -161,6 +167,33 @@ function main() {
   canvas = document.getElementById("gameBoard");
 
   canvas.addEventListener('click', onCanvasClick, false);
+
+  canvas.addEventListener("mousedown", function(ev) {
+    var x = ev.clientX - canvas.offsetLeft;
+    var y = ev.clientY - canvas.offsetTop;
+
+    var state = getCellStateAtCoordinate(x, y);
+
+    function mouseMoveHandler(ev) {
+        var x = ev.clientX - canvas.offsetLeft;
+        var y = ev.clientY - canvas.offsetTop;
+
+        console.log("%f, %f: %d", x, y, state);
+
+        if (state == 0) {
+          setCellStateAtCoordinate(x, y, 1);
+        } else if (state == 1) {
+          setCellStateAtCoordinate(x, y, 0);
+        }
+    }
+
+    canvas.addEventListener("mousemove", mouseMoveHandler);
+
+    canvas.addEventListener("mouseup", function(ev) {
+      canvas.removeEventListener("mousemove", mouseMoveHandler);
+    }, false);
+  }, false);
+
   ctx = canvas.getContext("2d");
 
 
