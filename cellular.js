@@ -90,13 +90,14 @@ function updateBoard() {
 
   // Replace the current board with the next board
   gameBoard = nextBoard;
-
-  // Display the current board
-  //printBoard(gameBoard);
   displayBoard(gameBoard);
 }
 
 function displayBoard(board) {
+  // Display the current board
+
+  //printBoard(gameBoard);
+
   for (var i = 0; i < board.length; i += 1) {
     for (var j = 0; j < board[i].length; j += 1) {
       if (board[i][j] == 1) {
@@ -124,9 +125,44 @@ function sleep(milliseconds) {
   }
 }
 
+function toggleCellState(i, j) {
+  if (gameBoard[i][j] == 0) {
+    gameBoard[i][j] = 1;
+  } else {
+    gameBoard[i][j] = 0;
+  }
+
+  displayBoard(gameBoard);
+}
+
+function onCanvasClick(ev) {
+    var x = ev.clientX - canvas.offsetLeft;
+    var y = ev.clientY - canvas.offsetTop;
+
+    var i = y / squareSize;
+    var j = x / squareSize;
+
+    console.log("click in square %f, %f", i, j);
+    toggleCellState(Math.floor(i), Math.floor(j));
+}
+
+var timer;
+var delay = 100;
+
+function stopIterate() {
+  clearInterval(timer);
+}
+
+function beginIterate() {
+  timer = setInterval(updateBoard, delay);
+}
+
 function main() {
   canvas = document.getElementById("gameBoard");
+
+  canvas.addEventListener('click', onCanvasClick, false);
   ctx = canvas.getContext("2d");
+
 
   width = canvas.width;
   height = canvas.height;
