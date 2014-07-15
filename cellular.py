@@ -17,7 +17,7 @@ COMPASS = set([(0,  -1),
 
 class Cellular(object):
   def __init__(self):
-    self.rows = 15
+    self.rows = 10
     self.cols = 10
     self.board = np.zeros((self.rows, self.cols), dtype=np.int)
     self.nextBoard = np.zeros((self.rows, self.cols), dtype=np.int)
@@ -26,7 +26,6 @@ class Cellular(object):
     self.board[2][2] = 1
     self.board[2][0] = 1
     self.board[2][1] = 1
-    #self.board[0][0] = 1
 
   def updateCell(self, i, j):
     activeCells = 0

@@ -3,8 +3,9 @@ var height;
 var canvas;
 var ctx;
 var gameBoard;
-var rows = 50;
-var cols = rows;
+var squareSize = 10;
+var rows;
+var cols;
 
 
 var COMPASS = [[0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
@@ -96,7 +97,6 @@ function updateBoard() {
 }
 
 function displayBoard(board) {
-  var squareSize = 10;
   for (var i = 0; i < board.length; i += 1) {
     for (var j = 0; j < board[i].length; j += 1) {
       if (board[i][j] == 1) {
@@ -130,6 +130,9 @@ function main() {
 
   width = canvas.width;
   height = canvas.height;
+
+  cols = width/squareSize;
+  rows = height/squareSize;
 
   gameBoard = zeros([rows, cols]);
 
