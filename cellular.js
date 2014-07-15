@@ -16,13 +16,13 @@ var cols;
 var timer;
 var delay = 100;
 
-
+// Constants
 var COMPASS = [[0, -1], [1, -1], [1, 0], [1, 1], [0, 1], [-1, 1], [-1, 0], [-1, -1]];
 var NUM_ITERS = 5;
 
 
+// Creates an array of zeros with the specified dimensions
 function zeros(dimensions) {
-  // Create an array of zeros with the specified dimensions
   var array = [];
 
     for (var i = 0; i < dimensions[0]; ++i) {
@@ -31,12 +31,37 @@ function zeros(dimensions) {
     return array;
 }
 
+
+// Draws our little rectangles
 function drawRect(x, y, width, height, color) {
   ctx.fillStyle = color;
   ctx.fillRect(x, y, width, height);
 }
 
 
+// Display the specified board in the html canvas, colors based on cell's value
+function displayBoard(board) {
+  for (var i = 0; i < board.length; i += 1) {
+    for (var j = 0; j < board[i].length; j += 1) {
+      if (board[i][j] == 1) {
+        drawRect(j*squareSize, i*squareSize, squareSize-1, squareSize-1, "#33AA55");
+      } else {
+        drawRect(j*squareSize, i*squareSize, squareSize-1, squareSize-1, "#DDDDDD");
+      }
+    }
+  }
+}
+
+
+// Prints board to console.log (might be useless, originally for debugging)
+function printBoard(board) {
+  for (var i = 0; i < board.length; i += 1) {
+    console.log(board[i]);
+  }
+}
+
+
+// Checks around cell location, executes game rules
 function updateCell(i, j, currentBoard, nextBoard) {
   var activeCells = 0;
   var cellstate = false;
@@ -82,6 +107,9 @@ function updateCell(i, j, currentBoard, nextBoard) {
   //console.log("updating %d, %d, %s", i, j, cellstate ? "live" : "die");
 }
 
+
+// Creates a new board, performs updateCell on every cell,
+// and finally displays the new board
 function updateBoard() {
   console.log("updating the board");
   // Initialize the next board
@@ -101,30 +129,29 @@ function updateBoard() {
   displayBoard(gameBoard);
 }
 
-function displayBoard(board) {
-  // Display the current board
 
-  //printBoard(gameBoard);
-
-  for (var i = 0; i < board.length; i += 1) {
-    for (var j = 0; j < board[i].length; j += 1) {
-      if (board[i][j] == 1) {
-        drawRect(j*squareSize, i*squareSize, squareSize-1, squareSize-1, "#33AA55");
-      }
-      else {
-        drawRect(j*squareSize, i*squareSize, squareSize-1, squareSize-1, "#DDDDDD");
-      }
-    }
-  }
+// These two functions handle the start and stop buttons in the UI
+function stopIterate() {
+  clearInterval(timer);
+}
+function beginIterate() {
+  timer = setInterval(updateBoard, delay);
 }
 
-function printBoard(board) {
-  for (var i = 0; i < board.length; i += 1) {
-    console.log(board[i]);
-  }
+
+// Convert from mouse click coordinate space to gameBoard row/column space
+function coordinates2RowAndCol(x, y) {
+  i = Math.floor(y / squareSize)
+  j = Math.floor(x / squareSize)
+
+  //console.log("click in square %f, %f", i, j);
+  return [i, j];
 }
 
-function toggleCellState(i, j) {
+
+function toggleCellStateAtCoordinate(x, y) {
+  var [i, j] = coordinates2RowAndCol(x, y);
+
   if (gameBoard[i][j] == 0) {
     gameBoard[i][j] = 1;
   } else {
@@ -134,70 +161,68 @@ function toggleCellState(i, j) {
   displayBoard(gameBoard);
 }
 
+
 function setCellStateAtCoordinate(x, y, state) {
-  gameBoard[Math.floor(y / squareSize)][Math.floor(x / squareSize)] = state;
+  var [i, j] = coordinates2RowAndCol(x, y);
+  gameBoard[i][j] = state;
   displayBoard(gameBoard);
 }
 
+
 function getCellStateAtCoordinate(x, y) {
-  var state = gameBoard[Math.floor(y / squareSize)][Math.floor(x / squareSize)];
+  var state = gameBoard[i][j];
   return state;
 }
 
-function onCanvasClick(ev) {
-    var x = ev.clientX - canvas.offsetLeft;
-    var y = ev.clientY - canvas.offsetTop;
 
-    var i = y / squareSize;
-    var j = x / squareSize;
+function getXYfromEvent(event) {
+  var x = ev.clientX - canvas.offsetLeft;
+  var y = ev.clientY - canvas.offsetTop;
 
-    console.log("click in square %f, %f", i, j);
-    toggleCellState(Math.floor(i), Math.floor(j));
+  return [x, y];
 }
 
-function stopIterate() {
-  clearInterval(timer);
-}
 
-function beginIterate() {
-  timer = setInterval(updateBoard, delay);
-}
+function addHandlers() {
+    // Handle single click events
+  canvas.addEventListener('click', function(ev) {
+    toggleCellStateAtCoordinate(x, y);
+  }
 
-function main() {
-  canvas = document.getElementById("gameBoard");
-
-  canvas.addEventListener('click', onCanvasClick, false);
-
+  // Handle click & drag events
   canvas.addEventListener("mousedown", function(ev) {
-    var x = ev.clientX - canvas.offsetLeft;
-    var y = ev.clientY - canvas.offsetTop;
+    var [x, y] = getXYfromEvent(event);
+    var cellState = getCellStateAtCoordinate(x, y);
 
-    var state = getCellStateAtCoordinate(x, y);
-
+    // Create the handler in here so we have access to cellState
     function mouseMoveHandler(ev) {
-        var x = ev.clientX - canvas.offsetLeft;
-        var y = ev.clientY - canvas.offsetTop;
+        var [x, y] = getXYfromEvent(event);
 
-        console.log("%f, %f: %d", x, y, state);
-
-        if (state == 0) {
+        // Continue to 'paint' the same cell type
+        if (cellState == 0) {
           setCellStateAtCoordinate(x, y, 1);
-        } else if (state == 1) {
+        } else if (cellState == 1) {
           setCellStateAtCoordinate(x, y, 0);
         }
     }
 
+    // Add the handler we just created
     canvas.addEventListener("mousemove", mouseMoveHandler);
 
+    // Finally, add the mouseup handler so we remove the mousemove handler
     canvas.addEventListener("mouseup", function(ev) {
       canvas.removeEventListener("mousemove", mouseMoveHandler);
     }, false);
   }, false);
+}
+
+
+function main() {
+  canvas = document.getElementById("gameBoard");
 
   ctx = canvas.getContext("2d");
 
-
-  width = canvas.width;
+  width  = canvas.width;
   height = canvas.height;
 
   cols = width/squareSize;
@@ -212,16 +237,7 @@ function main() {
   gameBoard[2][0] = 1;
   gameBoard[2][1] = 1;
 
-  // Display the board
-  //printBoard(gameBoard);
-  displayBoard(gameBoard);
+  addHandlers();
 
-  /*
-  var squareSize = 10;
-  for (var i = 0; i < width; i += squareSize) {
-    for (var j = 0; j < height; j += squareSize) {
-      drawRect(i, j, squareSize-1, squareSize-1, "#33AA55");
-    }
-  }
-  */
+  displayBoard(gameBoard);
 }
