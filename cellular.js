@@ -141,16 +141,18 @@ function beginIterate() {
 
 // Convert from mouse click coordinate space to gameBoard row/column space
 function coordinates2RowAndCol(x, y) {
-  i = Math.floor(y / squareSize)
-  j = Math.floor(x / squareSize)
+  i = Math.floor(y / squareSize);
+  j = Math.floor(x / squareSize);
 
   //console.log("click in square %f, %f", i, j);
-  return [i, j];
+  return {i: i, j: j};
 }
 
 
 function toggleCellStateAtCoordinate(x, y) {
-  var [i, j] = coordinates2RowAndCol(x, y);
+  var result = coordinates2RowAndCol(x, y);
+  var i = result.i;
+  var j = result.j;
 
   if (gameBoard[i][j] == 0) {
     gameBoard[i][j] = 1;
@@ -163,47 +165,54 @@ function toggleCellStateAtCoordinate(x, y) {
 
 
 function setCellStateAtCoordinate(x, y, state) {
-  var [i, j] = coordinates2RowAndCol(x, y);
+  var result = coordinates2RowAndCol(x, y);
+  var i = result.i;
+  var j = result.j;
+
   gameBoard[i][j] = state;
   displayBoard(gameBoard);
 }
 
 
 function getCellStateAtCoordinate(x, y) {
+  var result = coordinates2RowAndCol(x, y);
+  var i = result.i;
+  var j = result.j;
+
   var state = gameBoard[i][j];
   return state;
 }
 
 
-function getXYfromEvent(event) {
+function getMousePositionfromEvent(ev) {
   var x = ev.clientX - canvas.offsetLeft;
   var y = ev.clientY - canvas.offsetTop;
-
-  return [x, y];
+  return {x: x, y: y};
 }
 
 
 function addHandlers() {
     // Handle single click events
   canvas.addEventListener('click', function(ev) {
-    toggleCellStateAtCoordinate(x, y);
-  }
+    var mousePos = getMousePositionfromEvent(ev);
+    toggleCellStateAtCoordinate(mousePos.x, mousePos.y);
+  });
 
   // Handle click & drag events
   canvas.addEventListener("mousedown", function(ev) {
-    var [x, y] = getXYfromEvent(event);
-    var cellState = getCellStateAtCoordinate(x, y);
+    var mouseDownPos = getMousePositionfromEvent(ev);
+    var cellState = getCellStateAtCoordinate(mouseDownPos.x, mouseDownPos.y);
 
     // Create the handler in here so we have access to cellState
     function mouseMoveHandler(ev) {
-        var [x, y] = getXYfromEvent(event);
+      var mousePos = getMousePositionfromEvent(ev);
 
-        // Continue to 'paint' the same cell type
-        if (cellState == 0) {
-          setCellStateAtCoordinate(x, y, 1);
-        } else if (cellState == 1) {
-          setCellStateAtCoordinate(x, y, 0);
-        }
+      // Continue to 'paint' the same cell type
+      if (cellState == 0) {
+        setCellStateAtCoordinate(mousePos.x, mousePos.y, 1);
+      } else if (cellState == 1) {
+        setCellStateAtCoordinate(mousePos.x, mousePos.y, 0);
+      }
     }
 
     // Add the handler we just created
@@ -211,10 +220,11 @@ function addHandlers() {
 
     // Finally, add the mouseup handler so we remove the mousemove handler
     canvas.addEventListener("mouseup", function(ev) {
+      console.log("adding this listener again");
       canvas.removeEventListener("mousemove", mouseMoveHandler);
     }, false);
   }, false);
-}
+};
 
 
 function main() {
