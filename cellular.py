@@ -7,6 +7,7 @@ import time
 # number of steps to run the game for
 _NUM_ITERS = 15
 
+# all 8 compass directions relative to a position
 COMPASS = set([(0,  -1),
               (1,  -1),
               (1,   0),
@@ -25,6 +26,8 @@ class Cellular(object):
     # to be displayed in the next iteration
     self.board = np.zeros((self.rows, self.cols), dtype=np.int)
     self.nextBoard = np.zeros((self.rows, self.cols), dtype=np.int)
+    
+    # draw a glider
     self.board[0][1] = 1
     self.board[1][2] = 1
     self.board[2][2] = 1
@@ -38,6 +41,8 @@ class Cellular(object):
 
     try:
       for coord in COMPASS:
+        # if the board is nonzero in any of the directions,
+        # we have a living neighbor
         activeCells += self.board[i+coord[0], j+coord[1]]
     except IndexError:
       # If we're here, we've tried to check beyond the edges of the game
